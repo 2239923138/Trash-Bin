@@ -75,14 +75,27 @@ def write_new_csvs(filename, selected_columns_list):
         print(f"已生成文件：{output_filename}")
 
 def main():
-    csv_files = [f for f in os.listdir('.') if f.lower().endswith('.csv')]
+    # 获取脚本所在目录
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(script_dir)  # 切换工作目录到脚本目录
+
+    # 查找该目录下的所有CSV文件
+    csv_files = [f for f in os.listdir(script_dir) if f.lower().endswith('.csv')]
+    
     if not csv_files:
-        print("当前目录下没有CSV文件。")
+        print("当前脚本目录下没有CSV文件。")
         return
+
+    print("当前目录：", script_dir)
+    print("检测到以下CSV文件：")
+    for i, f in enumerate(csv_files):
+        print(f"{i}: {f}")
 
     selected_file = select_file(csv_files)
 
-    with open(selected_file, mode='r', newline='', encoding='utf-8') as f:
+    full_path = os.path.join(script_dir, selected_file)
+
+    with open(full_path, mode='r', newline='', encoding='utf-8') as f:
         reader = csv.reader(f)
         headers = next(reader)
 
@@ -92,7 +105,7 @@ def main():
 
     output_count = get_output_count()
     selected_columns_list = split_and_merge_columns(selected_file, output_count, headers)
-    write_new_csvs(selected_file, selected_columns_list)
+    write_new_csvs(full_path, selected_columns_list)
 
 if __name__ == "__main__":
     main()
