@@ -3,7 +3,7 @@ import py2neo
 from py2neo import Node, Relationship ,Graph, Subgraph
 
 graph = Graph("bolt://localhost:7687", auth=("neo4j", "Zr20060428"))
-file_name="C:\\Users\\17591\Desktop\\algorithm_knowledge_graph.csv"
+file_name="algorithm_knowledge_graph.csv"
 name_list=[]            #1
 relation_list=[]        #2
 point_list=[]           #3
