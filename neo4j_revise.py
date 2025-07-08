@@ -5,7 +5,7 @@ from py2neo import Graph, Node, Relationship, NodeMatcher
 graph = Graph("bolt://localhost:7687", auth=("neo4j", "Zr20060428"))
 
 # 路径到你的 CSV 文件
-file_name = "C:\\Users\\17591\\Desktop\\algorithm_knowledge_graph.csv"
+file_name = "algorithm_knowledge_graph.csv"
 
 # 初始化 matcher（用于查找数据库中已有节点）
 matcher = NodeMatcher(graph)
