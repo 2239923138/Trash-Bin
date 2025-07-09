@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算法数据库可视化</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1f2040, #3e3841, #302f4b);
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        #header {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        #title {
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #51c4d3, #fbda41);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        #controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        #legend {
+            position: absolute;
+            top: 90px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 250px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 100;
+        }
+        
+        #legend h3 {
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #51c4d3;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .legend-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-5px);
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .legend-label {
+            font-size: 15px;
+        }
+        
+        #viz {
+            width: 100%;
+            height: calc(100vh - 80px);
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        #info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 15px;
+            display: flex;
+            gap: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .info-value {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            background: linear-gradient(to right, #51c4d3, #fbda41);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        #node-info {
+            position: absolute;
+            top: 90px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            max-width: 320px;
+            display: none;
+            z-index: 100;
+        }
+        
+        .info-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #fbda41;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .property-row {
+            display: flex;
+            margin-bottom: 12px;
+            font-size: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .property-name {
+            font-weight: 500;
+            min-width: 140px;
+            color: #51c4d3;
+        }
+        
+        .property-value {
+            flex: 1;
+            word-break: break-word;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #status-bar {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 14px;
+        }
+        
+        /* 搜索面板 */
+        #search-panel {
+            position: absolute;
+            top: 90px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 100;
+        }
+        
+        #search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            width: 250px;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <div id="title">📊 算法数据库可视化</div>
+        <div id="controls">
+            <button class="control-btn" id="refresh-btn">
+                <span>🔄</span> 刷新数据
+            </button>
+            <button class="control-btn" id="layout-btn">
+                <span>🔀</span> 恢复比例
+            </button>
+            <button class="control-btn" id="zoom-in">
+                <span>🔍</span> 放大
+            </button>
+            <button class="control-btn" id="zoom-out">
+                <span>🔎</span> 缩小
+            </button>
+        </div>
+    </div>
+    
+    <div id="viz"></div>
+    
+    <div id="legend">
+        <h3>节点类型图例</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #51c4d3;"></div>
+            <div class="legend-label">算法 (Algorithm)</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #eea2a4;"></div>
+            <div class="legend-label">分类 (Category)</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #fbda41;"></div>
+            <div class="legend-label">时间复杂度 (TimeComplexity)</div>
+        </div>
+    </div>
+    
+    <div id="info-panel">
+        <div class="info-item">
+            <div class="info-value" id="node-count">0</div>
+            <div class="info-label">节点数</div>
+        </div>
+        <div class="info-item">
+            <div class="info-value" id="edge-count">0</div>
+            <div class="info-label">关系数</div>
+        </div>
+        <div class="info-item">
+            <div class="info-value" id="algorithm-count">0</div>
+            <div class="info-label">算法数量</div>
+        </div>
+    </div>
+    
+    <div id="node-info">
+        <button class="close-btn" id="close-info">×</button>
+        <h3 class="info-title">📝 节点详情</h3>
+        <div id="node-details"></div>
+    </div>
+
+    <div id="status-bar">
+        <span id="status">准备连接数据库...</span>
+    </div>
+
+    <!-- 引入必要的库 -->
+    <script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <script src="https://unpkg.com/neo4j-driver"></script>
+    
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener("DOMContentLoaded", async function() {
+            // 修复报错：确保neo4j对象可用
+            if (typeof neo4j === 'undefined') {
+                document.getElementById('status').textContent = "错误：neo4j-driver未加载成功";
+                return;
+            }
+            
+            // 绑定按钮事件
+            document.getElementById('refresh-btn').addEventListener('click', loadData);
+            document.getElementById('layout-btn').addEventListener('click', resetLayout);
+            document.getElementById('zoom-in').addEventListener('click', zoomIn);
+            document.getElementById('zoom-out').addEventListener('click', zoomOut);
+            document.getElementById('close-info').addEventListener('click', closeNodeInfo);
+            
+            // 初始加载数据
+            await loadData();
+        });
+        
+        // 节点颜色配置（根据您的三种标签）
+        const labelColors = {
+            "Algorithm": "#51c4d3",        // 算法 - 青色
+            "Category": "#eea2a4",         // 分类 - 粉色
+            "TimeComplexity": "#fbda41",   // 时间复杂度 - 黄色
+            "_default": "#C7D0D8"          // 默认颜色
+        };
+        
+        // 关系配置
+        const relationshipColors = {
+            "属于": "#FFD700",             // 金色
+            "时间复杂度是": "#51c4d3"      // 青色（与算法相同）
+        };
+        
+        // 全局变量
+        let network = null;
+        let driver = null;
+        let allNodes = new Map();
+        let algorithmCount = 0;
+        
+        // 加载数据
+        async function loadData() {
+            updateStatus("正在连接数据库...");
+            
+            try {
+                // 创建driver连接数据库
+                driver = neo4j.driver(
+                    "bolt://localhost:7687",
+                    neo4j.auth.basic("neo4j", "LingLi051025"),
+                    { 
+                        encrypted: 'ENCRYPTION_OFF',
+                        disableLosslessIntegers: true 
+                    }
+                );
+                
+                // 验证连接
+                const session = driver.session();
+                await session.run('RETURN 1');
+                
+                updateStatus("正在执行查询...");
+                
+                // 执行查询 - 使用LIMIT 400
+                const result = await session.run(`
+                    MATCH (n)-[r]->(m)
+                    RETURN n, r, m
+                    LIMIT 400
+                `);
+                await session.close();
+                
+                updateStatus("处理数据中...");
+                
+                // 处理数据
+                processData(result);
+                
+                updateStatus("数据加载完成");
+                
+            } catch (error) {
+                console.error("错误:", error);
+                updateStatus(`错误: ${error.message}`);
+            }
+        }
+        
+        // 处理数据
+        function processData(result) {
+            const nodes = new vis.DataSet();
+            const edges = new vis.DataSet();
+            allNodes.clear();
+            algorithmCount = 0;
+            
+            // 隐藏节点信息面板
+            closeNodeInfo();
+            
+            // 临时存储节点映射
+            const nodeMap = new Map();
+            
+            // 处理记录
+            result.records.forEach(record => {
+                // 处理节点
+                ['n', 'm'].forEach(key => {
+                    if (record.keys.includes(key)) {
+                        const node = record.get(key);
+                        const nodeId = node.identity.toString();
+                        
+                        // 如果节点尚未添加
+                        if (!nodeMap.has(nodeId)) {
+                            const label = getNodeLabel(node);
+                            const color = getNodeColor(node);
+                            
+                            // 统计算法节点数量
+                            if (node.labels.includes("Algorithm")) {
+                                algorithmCount++;
+                            }
+                            
+                            const nodeData = {
+                                id: nodeId,
+                                label: label,
+                                title: JSON.stringify(node.properties, null, 2),
+                                color: {
+                                    background: color,
+                                    border: '#FFFFFF',
+                                    highlight: {
+                                        background: lightenColor(color, 20),
+                                        border: '#FFFFFF'
+                                    },
+                                    hover: {
+                                        background: lightenColor(color, 30),
+                                        border: '#FFFFFF'
+                                    }
+                                },
+                                properties: node.properties,
+                                labels: node.labels,
+                                font: {
+                                    size: 14,
+                                    face: 'Segoe UI, Microsoft YaHei',
+                                    color: '#FFFFFF',
+                                    strokeWidth: 0,
+                                    bold: false
+                                },
+                                // 关键修改：标签显示在节点下方
+                                shape: 'dot',
+                                size: 25
+                            };
+                            
+                            nodes.add(nodeData);
+                            nodeMap.set(nodeId, true);
+                            allNodes.set(nodeId, nodeData);
+                        }
+                    }
+                });
+                
+                // 处理关系
+                if (record.keys.includes('r')) {
+                    const rel = record.get('r');
+                    const relId = rel.identity.toString();
+                    
+                    // 确定关系颜色
+                    const relType = rel.type;
+                    const relColor = relationshipColors[relType] || '#C06C84';
+                    
+                    // 添加关系
+                    edges.add({
+                        id: relId,
+                        from: rel.start.toString(),
+                        to: rel.end.toString(),
+                        label: relType,
+                        color: relColor,
+                        arrows: 'to',
+                        width: 2,
+                        font: {
+                            size: 14,
+                            color: '#FFFFFF',
+                            strokeWidth: 2,
+                            strokeColor: '#000000'
+                        }
+                    });
+                }
+            });
+            
+            // 更新统计信息
+            document.getElementById('node-count').textContent = nodes.length;
+            document.getElementById('edge-count').textContent = edges.length;
+            document.getElementById('algorithm-count').textContent = algorithmCount;
+            
+            // 渲染图形
+            const container = document.getElementById('viz');
+            const data = { nodes, edges };
+            
+            const options = {
+                nodes: {
+                    borderWidth: 2,
+                    shadow: {
+                        enabled: true,
+                        color: 'rgba(0,0,0,0.5)',
+                        size: 10,
+                        x: 0,
+                        y: 0
+                    }
+                },
+                edges: {
+                    width: 2,
+                    arrows: {
+                        to: {enabled: true, scaleFactor: 0.8}
+                    },
+                    smooth: {
+                        type: 'cubicBezier',
+                        forceDirection: 'horizontal',
+                        roundness: 0.4
+                    }
+                },
+                physics: {
+                    stabilization: {
+                        iterations: 100
+                    },
+                    barnesHut: {
+                        gravitationalConstant: -6000,
+                        springConstant: 0.05,
+                        springLength: 180
+                    }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 150,
+                    hideEdgesOnDrag: false,
+                    selectable: true,
+                    multiselect: true,
+                    navigationButtons: true
+                }
+            };
+            
+            if (network) {
+                network.destroy();
+            }
+            
+            network = new vis.Network(container, data, options);
+            
+            // 添加节点点击事件
+            network.on("click", function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    showNodeInfo(nodeId);
+                } else {
+                    closeNodeInfo();
+                }
+            });
+            
+            // 添加悬停事件
+            network.on("hoverNode", function(params) {
+                network.canvas.body.container.style.cursor = 'pointer';
+            });
+            
+            network.on("blurNode", function(params) {
+                network.canvas.body.container.style.cursor = 'default';
+            });
+            
+            // 初始布局
+            setTimeout(() => {
+                network.fit({
+                    animation: {
+                        duration: 1000,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+            }, 500);
+        }
+        
+        // 获取节点标签
+        function getNodeLabel(node) {
+            // 尝试从属性中获取名称
+            if (node.properties.name) return node.properties.name;
+            if (node.properties.title) return node.properties.title;
+            if (node.properties.username) return node.properties.username;
+            
+            // 回退到第一个标签
+            return node.labels.length > 0 ? node.labels[0] : '节点';
+        }
+        
+        // 获取节点颜色
+        function getNodeColor(node) {
+            // 根据标签确定颜色
+            for (const label of node.labels) {
+                if (labelColors[label]) {
+                    return labelColors[label];
+                }
+            }
+            
+            // 默认颜色
+            return labelColors['_default'];
+        }
+        
+        // 显示节点信息
+        function showNodeInfo(nodeId) {
+            const node = allNodes.get(nodeId);
+            if (!node) return;
+            
+            const detailsDiv = document.getElementById('node-details');
+            detailsDiv.innerHTML = '';
+            
+            // 添加标签信息
+            const labelsDiv = document.createElement('div');
+            labelsDiv.className = 'property-row';
+            labelsDiv.innerHTML = `
+                <div class="property-name">标签:</div>
+                <div class="property-value">${node.labels.join(', ')}</div>
+            `;
+            detailsDiv.appendChild(labelsDiv);
+            
+            // 添加属性信息
+            for (const [key, value] of Object.entries(node.properties)) {
+                const propDiv = document.createElement('div');
+                propDiv.className = 'property-row';
+                
+                // 处理数组值
+                let displayValue = value;
+                if (Array.isArray(value)) {
+                    displayValue = value.join(', ');
+                } else if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                }
+                
+                propDiv.innerHTML = `
+                    <div class="property-name">${key}:</div>
+                    <div class="property-value">${displayValue}</div>
+                `;
+                detailsDiv.appendChild(propDiv);
+            }
+            
+            document.getElementById('node-info').style.display = 'block';
+        }
+        
+        // 关闭节点信息
+        function closeNodeInfo() {
+            document.getElementById('node-info').style.display = 'none';
+        }
+        
+        // 重置布局
+        function resetLayout() {
+            if (network) {
+                network.fit({
+                    animation: {
+                        duration: 1000,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+                updateStatus("已恢复比例");
+            }
+        }
+        
+        // 放大视图
+        function zoomIn() {
+            if (network) {
+                const scale = network.getScale() * 1.3;
+                network.moveTo({
+                    scale: scale,
+                    animation: {
+                        duration: 500,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+            }
+        }
+        
+        // 缩小视图
+        function zoomOut() {
+            if (network) {
+                const scale = network.getScale() * 0.7;
+                network.moveTo({
+                    scale: scale,
+                    animation: {
+                        duration: 500,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+            }
+        }
+        
+        // 更新状态信息
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        // 颜色变亮函数
+        function lightenColor(color, percent) {
+            const num = parseInt(color.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            
+            return "#" + (
+                0x1000000 +
+                (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+                (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+                (B < 255 ? (B < 1 ? 0 : B) : 255)
+            ).toString(16).slice(1);
+        }
+    </script>
+</body>
+</html>
