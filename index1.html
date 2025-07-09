@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div id="viz" style="width:100vw;height:100vh;"></div>
+  
+  <script>
+    // 完全绕过neovis.js，使用原生可视化
+    window.onload = async function() {
+      try {
+        // 1. 创建driver
+        const driver = neo4j.driver(
+          "bolt://localhost:7687",
+          neo4j.auth.basic("neo4j", "LingLi051025"),
+          { encrypted: 'ENCRYPTION_OFF' }
+        );
+        
+        // 2. 获取数据
+        const session = driver.session();
+        const result = await session.run(`
+          MATCH (n)-[r]->(m)
+          RETURN n, r, m
+          LIMIT 500
+        `);
+        await session.close();
+        
+        // 3. 使用vis.js直接渲染
+        const nodes = new vis.DataSet();
+        const edges = new vis.DataSet();
+        
+        // 创建节点映射
+        const nodeMap = {};
+        
+        result.records.forEach(record => {
+          // 处理节点
+          ['n', 'm'].forEach(key => {
+            const node = record.get(key);
+            if (!nodeMap[node.identity.toString()]) {
+              nodeMap[node.identity.toString()] = true;
+              nodes.add({
+                id: node.identity.toString(),
+                label: node.properties.name || node.labels[0],
+                title: JSON.stringify(node.properties, null, 2)
+              });
+            }
+          });
+          
+          // 处理关系
+          const rel = record.get('r');
+          edges.add({
+            id: rel.identity.toString(),
+            from: rel.start.toString(),
+            to: rel.end.toString(),
+            label: rel.type,
+            arrows: 'to'
+          });
+        });
+        
+        // 4. 渲染图形
+        const container = document.getElementById('viz');
+        const data = { nodes, edges };
+        const options = {};
+        new vis.Network(container, data, options);
+        
+      } catch (error) {
+        console.error("错误:", error);
+        alert(`初始化失败: ${error.message}`);
+      }
+    };
+  </script>
+  
+  <!-- 引入vis.js -->
+  <script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
+  <link href="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.css" rel="stylesheet">
+  <!-- 引入neo4j-driver -->
+  <script src="https://unpkg.com/neo4j-driver"></script>
+</body>
+</html>
