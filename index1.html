@@ -13,7 +13,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1f2040, #3e3841, #302f4b);
+            background: linear-gradient(135deg, #1a2a6c, #2d388a, #1a2a6c);
             color: #fff;
             min-height: 100vh;
             overflow: hidden;
@@ -221,6 +221,28 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
             font-size: 14px;
         }
+        
+        /* 搜索面板 */
+        #search-panel {
+            position: absolute;
+            top: 90px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 100;
+        }
+        
+        #search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            width: 250px;
+        }
     </style>
 </head>
 <body>
@@ -279,6 +301,10 @@
         <button class="close-btn" id="close-info">×</button>
         <h3 class="info-title">📝 节点详情</h3>
         <div id="node-details"></div>
+    </div>
+    
+    <div id="search-panel">
+        <input type="text" id="search-input" placeholder="搜索算法或分类...">
     </div>
     
     <div id="status-bar">
@@ -421,14 +447,16 @@
                                 properties: node.properties,
                                 labels: node.labels,
                                 font: {
-                                    size: 15,        // 字体大小
+                                    size: 14,        // 减小字体大小以适应节点
                                     face: 'Segoe UI, Microsoft YaHei', // 字体
                                     color: '#FFFFFF', // 字体颜色
                                     strokeWidth: 0,  // 文字描边宽度
                                     bold: false      // 禁用粗体
                                 },
-                                shape: 'dot',
-                                size: 28
+                                // 关键修复：使用圆形节点并确保标签在内部
+                                shape: 'circle',
+                                size: 30,            // 增大节点大小
+                                margin: 5             // 增加内边距
                             };
                             
                             nodes.add(nodeData);
@@ -455,7 +483,7 @@
                         label: relType,
                         color: relColor,
                         arrows: 'to',
-                        width: 3,
+                        width: 2,
                         font: {
                             size: 14,
                             color: '#FFFFFF',
@@ -507,10 +535,11 @@
                         springLength: 180
                     }
                 },
+                // 修复拖动时连线消失的问题
                 interaction: {
                     hover: true,
                     tooltipDelay: 150,
-                    hideEdgesOnDrag: true,
+                    hideEdgesOnDrag: false, // 关键修复：拖动时不隐藏边
                     selectable: true,
                     multiselect: true,
                     navigationButtons: true
