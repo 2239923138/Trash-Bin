@@ -2,7 +2,7 @@ import csv
 from py2neo import Graph, Node, Relationship
 
 # 1. 连接 Neo4j（请替换用户名和密码）
-graph = Graph("bolt://localhost:7687", auth=("neo4j", "Zr20060428"))
+graph = Graph("bolt://localhost:7687", auth=("neo4j", "yourpassword"))
 
 # 2. 从 CSV 读取数据，创建 Category、Algorithm 节点及它们之间的 BELONGS_TO 关系
 #    并将非“多变”的 TimeComplexity 拆分为独立节点、与 Algorithm 建立 HAS_TIME_COMPLEXITY 关系
@@ -44,13 +44,13 @@ with open(r"NewerResource.csv", encoding="utf-8") as f:
         graph.merge(alg_node, "Algorithm", "name")
 
         # 2.3 建立 BELONGS_TO 关系：Algorithm -> Category
-        rel_cat = Relationship(alg_node, "BELONGS_TO", cat_node)
+        rel_cat = Relationship(alg_node, "属于", cat_node)
         graph.merge(rel_cat)
 
         # 2.4 如果 TimeComplexity 不是 “多变”，拆分为独立节点并关联
         if tc_val and tc_val != "多变":
-            tc_node = Node("TimeComplexity", value=tc_val)
-            graph.merge(tc_node, "TimeComplexity", "value")
+            tc_node = Node("TimeComplexity", name=tc_val)
+            graph.merge(tc_node, "TimeComplexity", "name")
             rel_tc = Relationship(alg_node, "HAS_TIME_COMPLEXITY", tc_node)
             graph.merge(rel_tc)
 
