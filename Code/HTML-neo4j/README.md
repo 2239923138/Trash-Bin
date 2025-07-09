@@ -1,0 +1,1 @@
+运行app.py或在用命令提示符转到目录后运行python app.py
