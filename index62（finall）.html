@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算法知识图谱 - Neo4j数据可视化</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="app4.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --success: #2ecc71;
+            --warning: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .my-button {
+            background-color: #2f2f35; /* 绿色背景 */
+            border: none; /* 无边框 */
+            color: white; /* 白色文字 */
+            padding: 15px 32px; /* 内边距 */
+            text-align: center; /* 文字居中 */
+            text-decoration: none; /* 无下划线 */
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer; /* 鼠标指针变为手形 */
+            border-radius: 8px; /* 圆角 */
+            transition: background-color 0.3s; /* 悬停过渡效果 */
+        }
+  
+        .my-button:hover {
+            background-color: #525288; /* 悬停时颜色变深 */
+        }
+
+        .art-text {
+            font-family: 'Arial Black', sans-serif;
+            font-size: 48px;
+            color: #ff3366;
+            text-shadow: 3px 3px 0px #ffcc00, 
+                        6px 6px 0px #ff9900;
+            transform: rotate(-5deg);
+            display: inline-block;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--secondary), var(--dark));
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+        
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        
+        .logo span {
+            color: var(--primary);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .filter-group {
+            flex: 1;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .filter-group h3 {
+            margin-bottom: 12px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-group h3 i {
+            color: var(--primary);
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            background: var(--light);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .card-header h2 {
+            color: var(--secondary);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-header h2 i {
+            color: var(--primary);
+        }
+        
+        /* 表格容器样式 - 添加滚动功能 */
+        .table-container {
+            overflow: hidden;
+            position: relative;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-top: 20px;
+            max-height: 400px;
+        }
+        
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        th {
+            background-color: var(--light);
+            color: var(--dark);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        tbody {
+            display: block;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        
+        thead, tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+        
+        tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .complexity {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .time-complexity {
+            background-color: rgba(231, 76, 60, 0.15);
+            color: var(--accent);
+        }
+        
+        .space-complexity {
+            background-color: rgba(52, 152, 219, 0.15);
+            color: var(--primary);
+        }
+        
+        .graph-container {
+            height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px 0;
+            margin-top: 40px;
+            color: var(--dark);
+            border-top: 1px solid #eee;
+        }
+        
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .stat-1 { background: rgba(46, 204, 113, 0.2); color: var(--success); }
+        .stat-2 { background: rgba(52, 152, 219, 0.2); color: var(--primary); }
+        .stat-3 { background: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+        .stat-4 { background: rgba(243, 156, 18, 0.2); color: var(--warning); }
+        
+        .stat-info h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-info p {
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        /* 返回主页按钮样式 */
+        .home-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .home-button:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .table-container {
+                max-height: 300px;
+            }
+            
+            tbody {
+                max-height: 220px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            /* 表格响应式调整 */
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            thead {
+                display: none;
+            }
+            
+            tbody {
+                display: block;
+                max-height: none;
+                overflow-x: auto;
+            }
+            
+            tbody tr {
+                display: flex;
+                flex-direction: column;
+                margin-bottom: 15px;
+                border: 1px solid #eee;
+                border-radius: 8px;
+                padding: 10px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+            
+            tbody td {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 10px;
+                border: none;
+            }
+            
+            tbody td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-right: 10px;
+                color: var(--dark);
+                flex: 0 0 100px;
+            }
+            
+            /* 移动端调整返回按钮位置 */
+            .home-button {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 15px auto;
+                width: fit-content;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="http://127.0.0.1:8000/" class="home-button">
+            <span style="font-size: 24px;">🔍</span><i class="card-header"></i> 壹伴搜索
+        </a>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-project-diagram"></i>
+                    <h1>算法知识<span>图谱</span></h1>
+                </div>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-1">
+                            <i class="fas fa-sitemap"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="category-count">12</h3>
+                            <p>算法分类</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="controls">
+            <div class="filter-group">
+                <h3><i class="fas fa-filter"></i> 算法分类</h3>
+                <div class="filter-options" id="category-filters">
+                    <!-- 分类筛选按钮将通过JS动态生成 -->
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <h3><i class="fas fa-chart-line"></i> 时间复杂度</h3>
+                <div class="filter-options" id="complexity-filters">
+                    <!-- 复杂度筛选按钮将通过JS动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-table"></i> 算法数据概览</h2>
+                </div>
+                <div class="table-container">
+                    <table id="algorithm-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">算法名称</th>
+                                <th style="width: 20%">分类</th>
+                                <th style="width: 20%">英文名</th>
+                                <th style="width: 15%">时间复杂度</th>
+                                <th style="width: 15%">空间复杂度</th>
+                                <th style="width: 10%">类型</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 表格数据将通过JS动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-pie"></i> 分类统计</h2>
+                </div>
+                <div>
+                    <canvas id="category-chart"></canvas>
+                </div>
+                
+                <div class="card-header" style="margin-top: 25px;">
+                    <h2><i class="fas fa-bolt"></i> 时间复杂度分布</h2>
+                </div>
+                <div>
+                    <canvas id="complexity-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-share-alt"></i> 算法关系图谱</h2>
+            </div>
+            <div>
+                <a href="#" class="stat-card">
+                    <button class="my-button">详细算法图谱</button>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2025 算法知识图谱 | 数据来源: Neo4j 知识库 | 共 <span id="algorithm-count">0</span> 个算法</p>
+    </div>
+
+    <script>
+        // 模拟数据 - 在实际应用中应从后端API获取
+        const algorithms = [
+            {
+                id: 1,
+                name: "快速排序",
+                category: "排序算法",
+                english_name: "Quick Sort",
+                algorithm_type: "比较排序",
+                time_complexity: "O(n log n)",
+                space_complexity: "O(log n)",
+                stability: "不稳定",
+                use_cases: "大规模数据排序",
+                core_idea: "分治法，选取基准元素分区",
+                applicable_domains: "通用排序",
+                pros_cons_analysis: "速度快但最坏情况性能差"
+            },
+            {
+                id: 2,
+                name: "归并排序",
+                category: "排序算法",
+                english_name: "Merge Sort",
+                algorithm_type: "比较排序",
+                time_complexity: "O(n log n)",
+                space_complexity: "O(n)",
+                stability: "稳定",
+                use_cases: "大规模数据排序，外部排序",
+                core_idea: "分治法，合并有序序列",
+                applicable_domains: "通用排序",
+                pros_cons_analysis: "稳定但需要额外空间"
+            },
+            {
+                id: 3,
+                name: "深度优先搜索",
+                category: "图算法",
+                english_name: "Depth-First Search",
+                algorithm_type: "图遍历",
+                time_complexity: "O(V+E)",
+                space_complexity: "O(V)",
+                stability: "N/A",
+                use_cases: "路径查找，连通分量",
+                core_idea: "尽可能深地探索图的分支",
+                applicable_domains: "图论，迷宫求解",
+                pros_cons_analysis: "内存占用少但可能找不到最短路径"
+            },
+            {
+                id: 4,
+                name: "Dijkstra算法",
+                category: "图算法",
+                english_name: "Dijkstra's Algorithm",
+                algorithm_type: "最短路径",
+                time_complexity: "O(V^2)",
+                space_complexity: "O(V)",
+                stability: "N/A",
+                use_cases: "非负权图的最短路径",
+                core_idea: "贪心策略，逐步扩展最短路径树",
+                applicable_domains: "路由，网络优化",
+                pros_cons_analysis: "高效但不能处理负权边"
+            },
+            {
+                id: 5,
+                name: "二分查找",
+                category: "搜索算法",
+                english_name: "Binary Search",
+                algorithm_type: "搜索",
+                time_complexity: "O(log n)",
+                space_complexity: "O(1)",
+                stability: "N/A",
+                use_cases: "有序数组查找",
+                core_idea: "分治策略，每次缩小一半搜索范围",
+                applicable_domains: "搜索，数据库索引",
+                pros_cons_analysis: "高效但要求数据有序"
+            },
+            {
+                id: 6,
+                name: "冒泡排序",
+                category: "排序算法",
+                english_name: "Bubble Sort",
+                algorithm_type: "比较排序",
+                time_complexity: "O(n^2)",
+                space_complexity: "O(1)",
+                stability: "稳定",
+                use_cases: "小规模数据排序",
+                core_idea: "重复遍历列表，比较相邻元素",
+                applicable_domains: "教学演示",
+                pros_cons_analysis: "简单但效率低"
+            },
+            {
+                id: 7,
+                name: "堆排序",
+                category: "排序算法",
+                english_name: "Heap Sort",
+                algorithm_type: "比较排序",
+                time_complexity: "O(n log n)",
+                space_complexity: "O(1)",
+                stability: "不稳定",
+                use_cases: "大规模数据排序",
+                core_idea: "利用堆数据结构进行排序",
+                applicable_domains: "通用排序",
+                pros_cons_analysis: "原地排序但缓存不友好"
+            },
+            {
+                id: 8,
+                name: "广度优先搜索",
+                category: "图算法",
+                english_name: "Breadth-First Search",
+                algorithm_type: "图遍历",
+                time_complexity: "O(V+E)",
+                space_complexity: "O(V)",
+                stability: "N/A",
+                use_cases: "最短路径，连通分量",
+                core_idea: "逐层遍历图的所有节点",
+                applicable_domains: "图论，网络爬虫",
+                pros_cons_analysis: "能找到最短路径但内存占用大"
+            },
+            {
+                id: 9,
+                name: "Kruskal算法",
+                category: "图算法",
+                english_name: "Kruskal's Algorithm",
+                algorithm_type: "最小生成树",
+                time_complexity: "O(E log E)",
+                space_complexity: "O(E)",
+                stability: "N/A",
+                use_cases: "网络设计，电路连接",
+                core_idea: "贪心策略，选择最小权重边",
+                applicable_domains: "网络优化",
+                pros_cons_analysis: "高效但需要排序所有边"
+            },
+            {
+                id: 10,
+                name: "线性搜索",
+                category: "搜索算法",
+                english_name: "Linear Search",
+                algorithm_type: "搜索",
+                time_complexity: "O(n)",
+                space_complexity: "O(1)",
+                stability: "N/A",
+                use_cases: "无序列表搜索",
+                core_idea: "逐个检查列表元素",
+                applicable_domains: "简单搜索",
+                pros_cons_analysis: "简单但效率低"
+            },
+            {
+                id: 11,
+                name: "插入排序",
+                category: "排序算法",
+                english_name: "Insertion Sort",
+                algorithm_type: "比较排序",
+                time_complexity: "O(n^2)",
+                space_complexity: "O(1)",
+                stability: "稳定",
+                use_cases: "小规模数据排序",
+                core_idea: "构建有序序列，插入新元素",
+                applicable_domains: "部分有序数据",
+                pros_cons_analysis: "简单高效对小数据集"
+            },
+            {
+                id: 12,
+                name: "选择排序",
+                category: "排序算法",
+                english_name: "Selection Sort",
+                algorithm_type: "比较排序",
+                time_complexity: "O(n^2)",
+                space_complexity: "O(1)",
+                stability: "不稳定",
+                use_cases: "小规模数据排序",
+                core_idea: "重复选择最小元素",
+                applicable_domains: "教学演示",
+                pros_cons_analysis: "简单但效率低"
+            }
+        ];
+        
+        // 从数组中随机选择最多n个项目（不足则全部返回）
+        function getRandomItems(array, n) {
+            if (array.length <= n) {
+                return array.slice(); // 返回副本
+            }
+            
+            // 创建数组副本
+            const shuffled = array.slice();
+            
+            // Fisher-Yates 洗牌算法
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            // 返回前n个项目
+            return shuffled.slice(0, n);
+        }
+        
+        // 提取所有分类
+        const categories = [...new Set(algorithms.map(alg => alg.category))];
+        
+        // 提取所有时间复杂度（去重并过滤空值）
+        const allComplexities = [...new Set(algorithms.map(alg => alg.time_complexity))].filter(c => c);
+        
+        // 随机提取最多10条时间复杂度（不足则全部提取）
+        const complexities = getRandomItems(allComplexities, 10);
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 更新统计信息
+            document.getElementById('category-count').textContent = categories.length;
+            document.getElementById('algorithm-count').textContent = algorithms.length;
+            
+            // 渲染分类筛选按钮
+            renderFilterButtons('category-filters', categories, 'category');
+            
+            // 渲染复杂度筛选按钮
+            renderFilterButtons('complexity-filters', complexities, 'complexity');
+            
+            // 渲染算法表格
+            renderAlgorithmTable(algorithms);
+            
+            // 渲染图表
+            renderCharts(algorithms);
+            
+            // 渲染关系图谱
+            renderGraph(algorithms);
+        });
+        
+        // 渲染筛选按钮
+        function renderFilterButtons(containerId, items, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            // 添加"全部"选项
+            const allBtn = document.createElement('button');
+            allBtn.classList.add('filter-btn', 'active');
+            allBtn.setAttribute('data-type', type);
+            allBtn.setAttribute('data-value', 'all');
+            allBtn.textContent = '全部';
+            allBtn.addEventListener('click', filterAlgorithms);
+            container.appendChild(allBtn);
+            
+            // 添加分类选项
+            items.forEach(item => {
+                if (!item) return; // 跳过空值
+                
+                const btn = document.createElement('button');
+                btn.classList.add('filter-btn');
+                btn.setAttribute('data-type', type);
+                btn.setAttribute('data-value', item);
+                btn.textContent = item;
+                btn.addEventListener('click', filterAlgorithms);
+                container.appendChild(btn);
+            });
+        }
+        
+        // 筛选算法
+        function filterAlgorithms() {
+            const type = this.getAttribute('data-type');
+            const value = this.getAttribute('data-value');
+            
+            // 更新按钮状态
+            document.querySelectorAll(`.filter-btn[data-type="${type}"]`).forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // 应用筛选
+            let filteredAlgorithms = [...algorithms];
+            
+            // 应用分类筛选
+            const categoryFilter = document.querySelector(`.filter-btn.active[data-type="category"]`);
+            if (categoryFilter && categoryFilter.dataset.value !== 'all') {
+                filteredAlgorithms = filteredAlgorithms.filter(
+                    alg => alg.category === categoryFilter.dataset.value
+                );
+            }
+            
+            // 应用复杂度筛选
+            const complexityFilter = document.querySelector(`.filter-btn.active[data-type="complexity"]`);
+            if (complexityFilter && complexityFilter.dataset.value !== 'all') {
+                filteredAlgorithms = filteredAlgorithms.filter(
+                    alg => alg.time_complexity === complexityFilter.dataset.value
+                );
+            }
+            
+            // 更新表格
+            renderAlgorithmTable(filteredAlgorithms);
+            
+            // 更新图表
+            renderCharts(filteredAlgorithms);
+            
+            // 更新关系图
+            renderGraph(filteredAlgorithms);
+        }
+        
+        // 渲染算法表格
+        function renderAlgorithmTable(data) {
+            const tbody = document.querySelector('#algorithm-table tbody');
+            tbody.innerHTML = '';
+            
+            data.forEach(algorithm => {
+                const row = document.createElement('tr');
+                
+                // 为移动端添加数据标签
+                row.innerHTML = `
+                    <td data-label="算法名称"><strong>${algorithm.name}</strong></td>
+                    <td data-label="分类">${algorithm.category}</td>
+                    <td data-label="英文名">${algorithm.english_name}</td>
+                    <td data-label="时间复杂度"><span class="complexity time-complexity">${algorithm.time_complexity}</span></td>
+                    <td data-label="空间复杂度"><span class="complexity space-complexity">${algorithm.space_complexity}</span></td>
+                    <td data-label="类型">${algorithm.algorithm_type}</td>
+                `;
+                
+                // 添加点击事件显示详情
+                row.addEventListener('click', () => {
+                    showAlgorithmDetails(algorithm);
+                });
+                
+                tbody.appendChild(row);
+            });
+            
+            // 添加平滑滚动效果
+            tbody.addEventListener('wheel', function(e) {
+                if (this.scrollHeight > this.clientHeight) {
+                    this.scrollTop += e.deltaY;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        }
+        
+        // 显示算法详情
+        function showAlgorithmDetails(algorithm) {
+            // 创建模态框
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                border-radius: 10px;
+                padding: 30px;
+                width: 80%;
+                max-width: 700px;
+                max-height: 80vh;
+                overflow-y: auto;
+                position: relative;
+                box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            `;
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '×';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                color: #777;
+            `;
+            closeBtn.addEventListener('click', () => document.body.removeChild(modal));
+            
+            const title = document.createElement('h2');
+            title.textContent = algorithm.name;
+            title.style.cssText = `
+                margin-bottom: 20px;
+                color: #2c3e50;
+                border-bottom: 2px solid #3498db;
+                padding-bottom: 10px;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            `;
+            
+            const detailsHtml = `
+                <div class="detail-group">
+                    <h3><i class="fas fa-tag"></i> 基本信息</h3>
+                    <p><strong>英文名:</strong> ${algorithm.english_name}</p>
+                    <p><strong>分类:</strong> ${algorithm.category}</p>
+                    <p><strong>类型:</strong> ${algorithm.algorithm_type}</p>
+                    <p><strong>稳定性:</strong> ${algorithm.stability}</p>
+                </div>
+                
+                <div class="detail-group">
+                    <h3><i class="fas fa-chart-line"></i> 复杂度</h3>
+                    <p><strong>时间复杂度:</strong> <span class="complexity time-complexity">${algorithm.time_complexity}</span></p>
+                    <p><strong>空间复杂度:</strong> <span class="complexity space-complexity">${algorithm.space_complexity}</span></p>
+                </div>
+                
+                <div class="detail-group">
+                    <h3><i class="fas fa-lightbulb"></i> 核心思想</h3>
+                    <p>${algorithm.core_idea}</p>
+                </div>
+                
+                <div class="detail-group">
+                    <h3><i class="fas fa-globe-americas"></i> 应用领域</h3>
+                    <p>${algorithm.applicable_domains}</p>
+                </div>
+                
+                <div class="detail-group" style="grid-column: span 2;">
+                    <h3><i class="fas fa-check-circle"></i> 使用场景</h3>
+                    <p>${algorithm.use_cases}</p>
+                </div>
+                
+                <div class="detail-group" style="grid-column: span 2;">
+                    <h3><i class="fas fa-balance-scale"></i> 优缺点分析</h3>
+                    <p>${algorithm.pros_cons_analysis}</p>
+                </div>
+            `;
+            
+            content.innerHTML = detailsHtml;
+            
+            modalContent.appendChild(closeBtn);
+            modalContent.appendChild(title);
+            modalContent.appendChild(content);
+            modal.appendChild(modalContent);
+            
+            document.body.appendChild(modal);
+        }
+        
+        // 渲染图表
+        function renderCharts(data) {
+            // 如果已经存在图表实例，则销毁
+            if (window.categoryChart) {
+                window.categoryChart.destroy();
+            }
+            if (window.complexityChart) {
+                window.complexityChart.destroy();
+            }
+            
+            // 分类分布图
+            const categoryCounts = {};
+            categories.forEach(cat => {
+                categoryCounts[cat] = data.filter(alg => alg.category === cat).length;
+            });
+            
+            const categoryCtx = document.getElementById('category-chart').getContext('2d');
+            window.categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(categoryCounts),
+                    datasets: [{
+                        data: Object.values(categoryCounts),
+                        backgroundColor: [
+                            '#3498db', '#2ecc71', '#e74c3c', '#9b59b6', '#f39c12',
+                            '#1abc9c', '#34495e', '#d35400', '#27ae60', '#8e44ad'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        title: {
+                            display: true,
+                            text: '算法分类分布'
+                        }
+                    }
+                }
+            });
+            
+            // 时间复杂度分布图
+            const complexityCounts = {};
+            complexities.forEach(comp => {
+                if (!comp) return;
+                const count = data.filter(alg => alg.time_complexity === comp).length;
+                if (count > 0) {
+                    complexityCounts[comp] = count;
+                }
+            });
+            
+            const complexityCtx = document.getElementById('complexity-chart').getContext('2d');
+            window.complexityChart = new Chart(complexityCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(complexityCounts),
+                    datasets: [{
+                        label: '数量',
+                        data: Object.values(complexityCounts),
+                        backgroundColor: '#3498db',
+                        borderColor: '#2980b9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '时间复杂度分布'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 渲染关系图谱
+        function renderGraph(data) {
+            const container = document.getElementById('graph');
+            container.innerHTML = '';
+            
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            // 创建SVG画布
+            const svg = d3.select('#graph')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+            
+            // 创建节点和链接数据
+            const nodes = [];
+            const links = [];
+            
+            // 添加分类节点
+            categories.forEach(category => {
+                if (!category) return;
+                nodes.push({
+                    id: `category-${category}`,
+                    name: category,
+                    type: 'category',
+                    size: 30
+                });
+            });
+            
+            // 添加算法节点
+            data.forEach(algorithm => {
+                if (!algorithm.category) return;
+                nodes.push({
+                    id: `algorithm-${algorithm.id}`,
+                    name: algorithm.name,
+                    type: 'algorithm',
+                    size: 20,
+                    algorithm: algorithm
+                });
+                
+                // 添加算法到分类的链接
+                links.push({
+                    source: `algorithm-${algorithm.id}`,
+                    target: `category-${algorithm.category}`,
+                    type: 'belongs_to'
+                });
+            });
+            
+            // 添加时间复杂度节点
+            complexities.forEach(complexity => {
+                if (!complexity) return;
+                nodes.push({
+                    id: `complexity-${complexity}`,
+                    name: complexity,
+                    type: 'complexity',
+                    size: 15
+                });
+            });
+            
+            // 添加算法到时间复杂度的链接
+            data.forEach(algorithm => {
+                if (algorithm.time_complexity) {
+                    links.push({
+                        source: `algorithm-${algorithm.id}`,
+                        target: `complexity-${algorithm.time_complexity}`,
+                        type: 'has_complexity'
+                    });
+                }
+            });
+            
+            // 如果节点为空，则返回
+            if (nodes.length === 0) {
+                svg.append('text')
+                    .attr('x', width/2)
+                    .attr('y', height/2)
+                    .attr('text-anchor', 'middle')
+                    .text('没有数据可显示');
+                return;
+            }
+            
+            // 创建力导向图
+            const simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.size + 5));
+            
+            // 绘制链接
+            const link = svg.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('stroke', d => d.type === 'belongs_to' ? '#3498db' : '#e74c3c')
+                .attr('stroke-width', 2)
+                .attr('stroke-opacity', 0.6);
+            
+            // 绘制节点
+            const node = svg.append('g')
+                .attr('class', 'nodes')
+                .selectAll('g')
+                .data(nodes)
+                .enter()
+                .append('g');
+            
+            // 根据节点类型设置不同样式
+            node.append('circle')
+                .attr('r', d => d.size)
+                .attr('fill', d => {
+                    if (d.type === 'category') return '#2ecc71';
+                    if (d.type === 'algorithm') return '#3498db';
+                    return '#e74c3c';
+                })
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended)
+                );
+            
+            // 添加节点文字
+            node.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dy', '0.35em')
+                .attr('font-size', d => d.type === 'category' ? '12px' : '10px')
+                .attr('fill', '#fff')
+                .text(d => d.name ? d.name.substring(0, 10) : '')
+                .attr('pointer-events', 'none');
+            
+            // 添加悬浮提示
+            node.append('title')
+                .text(d => d.name);
+            
+            // 节点点击事件
+            node.on('click', (event, d) => {
+                if (d.type === 'algorithm') {
+                    showAlgorithmDetails(d.algorithm);
+                }
+            });
+            
+            // 更新位置函数
+            function ticked() {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+                
+                node
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            }
+            
+            // 拖拽函数
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+            
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+            
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+            
+            // 监听tick事件
+            simulation.on('tick', ticked);
+        }
+    </script>
+</body>
+</html>
