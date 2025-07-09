@@ -2,7 +2,7 @@ import os
 from py2neo import Graph, Node, Relationship, NodeMatcher
 
 # 连接 Neo4j 数据库
-graph = Graph("bolt://localhost:7687", auth=("neo4j", "Zr20060428"))
+graph = Graph("bolt://localhost:7687", auth=("neo4j", "yourpassword"))
 
 # 路径到你的 CSV 文件
 file_name = "algorithm_knowledge_graph.csv"
