@@ -7,7 +7,6 @@ from pathlib import Path
 api_key = os.environ["DEEPSEEK_API_KEY"]
 client = OpenAI(base_url="https://api.deepseek.com", api_key=api_key)
 
-# 步骤1：实现一个简单的“关键词匹配”检索器
 def retrieval(query):
     context = ""
     # 遍历所有文件
@@ -19,7 +18,6 @@ def retrieval(query):
             context += "\n\n"
     return context
 
-# 步骤2：增强Query
 def augmented(query, context=""):
     if not context:
         return f"请回答下面问题:{query}，如果问题与计算机编程算法无关，请让我问重新问与算法相关的问题,如果有关，请回答我，要求：生成一段话即可，尽量简洁，最后给出一个相关网站的网页让我深入学习。"
@@ -31,7 +29,6 @@ def augmented(query, context=""):
         问题：{query}"""
         return prompt
 
-# 步骤3：生成回答
 def generation(prompt):
     completion = client.chat.completions.create(
         model="deepseek-chat",
@@ -46,7 +43,6 @@ def generation(prompt):
 
 app = Flask(__name__)
 
-# 使用 RAG+LLM 逻辑的回答函数
 def get_answer(question):
     context = retrieval(question)
     prompt = augmented(question, context)
