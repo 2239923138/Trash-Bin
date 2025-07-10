@@ -17,6 +17,154 @@
             color: #fff;
             min-height: 100vh;
             overflow: hidden;
+            position: relative;
+        }
+        
+        /* 登录页面样式 */
+        #login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.6s ease;
+        }
+        
+        #login-form {
+            width: 100%;
+            max-width: 450px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(81, 196, 211, 0.3);
+            text-align: center;
+            transform: translateY(0);
+            opacity: 1;
+            transition: all 0.5s ease;
+        }
+        
+        .login-hidden {
+            transform: translateY(-20px) !important;
+            opacity: 0 !important;
+        }
+        
+        #login-logo {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #51c4d3, #fbda41);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #1f2040;
+            box-shadow: 0 0 30px rgba(81, 196, 211, 0.5);
+        }
+        
+        #login-title {
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #51c4d3, #fbda41);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+        
+        #login-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #51c4d3;
+        }
+        
+        .input-field {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(81, 196, 211, 0.3);
+            border-radius: 12px;
+            padding: 14px 20px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .input-field:focus {
+            border-color: #51c4d3;
+            box-shadow: 0 0 15px rgba(81, 196, 211, 0.5);
+        }
+        
+        #username-field {
+            background: rgba(0, 0, 0, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            cursor: not-allowed;
+        }
+        
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #51c4d3, #fbda41);
+            border: none;
+            color: #1f2040;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        #login-message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            color: #ff6b6b;
+            display: none;
+        }
+        
+        #password-hint {
+            margin-top: 15px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* 主应用容器 - 初始隐藏 */
+        #app-container {
+            display: none;
+            height: 100vh;
+            overflow: hidden;
         }
         
         #header {
@@ -425,6 +573,11 @@
         
         /* 移动设备适配 */
         @media (max-width: 768px) {
+            #login-form {
+                padding: 30px 20px;
+                max-width: 90%;
+            }
+            
             #search-container {
                 width: 90%;
                 top: 15px;
@@ -490,94 +643,130 @@
     </style>
 </head>
 <body>
-    <div id="header">
-        <div id="title">📊 算法数据库可视化</div>
-        <div id="controls">
-            <button class="control-btn" id="refresh-btn">
-                <span>🔄</span> 刷新数据
-            </button>
-            <button class="control-btn" id="layout-btn">
-                <span>🔀</span> 重新布局
-            </button>
-            <button class="control-btn" id="zoom-in">
-                <span>🔍</span> 放大
-            </button>
-            <button class="control-btn" id="zoom-out">
-                <span>🔎</span> 缩小
-            </button>
-        </div>
-    </div>
-    
-    <!-- 搜索框新位置 -->
-    <div id="search-container">
-        <div class="search-wrapper">
-            <div id="search-box">
-                <div class="search-icon">🔍</div>
-                <input type="text" id="search-input" placeholder="搜索算法、分类或时间复杂度...">
+    <!-- 登录页面 -->
+    <div id="login-container">
+        <div id="login-form">
+            <div id="login-logo">
+                <div class="logo-icon">📊</div>
             </div>
-            <div id="search-results"></div>
-            <div id="search-actions">
-                <button class="search-action-btn" id="highlight-btn">
-                    <span>✨</span> 高亮匹配项
+            <h1 id="login-title">算法数据库可视化</h1>
+            <p id="login-subtitle">连接到您的Neo4j数据库</p>
+            
+            <form id="login-form-inner">
+                <div class="input-group">
+                    <label class="input-label" for="username">用户名</label>
+                    <input type="text" id="username" class="input-field" value="neo4j" readonly>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label" for="password">密码</label>
+                    <input type="password" id="password" class="input-field" placeholder="请输入您的密码">
+                </div>
+                
+                <button type="button" id="login-btn" class="login-btn">连接数据库</button>
+                
+                <div id="password-hint">
+                    提示：如果密码为空，将默认输入密码"neo4j"
+                </div>
+                
+                <div id="login-message">
+                    连接失败：请检查您的密码并重试
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 主应用容器 -->
+    <div id="app-container">
+        <div id="header">
+            <div id="title">📊 算法数据库可视化</div>
+            <div id="controls">
+                <button class="control-btn" id="refresh-btn">
+                    <span>🔄</span> 刷新数据
                 </button>
-                <button class="search-action-btn" id="clear-search-btn">
-                    <span>❌</span> 清除搜索
+                <button class="control-btn" id="layout-btn">
+                    <span>🔀</span> 重新布局
+                </button>
+                <button class="control-btn" id="zoom-in">
+                    <span>🔍</span> 放大
+                </button>
+                <button class="control-btn" id="zoom-out">
+                    <span>🔎</span> 缩小
                 </button>
             </div>
         </div>
-    </div>
-    
-    <div id="viz"></div>
-    
-    <!-- 高亮状态指示器 -->
-    <div id="highlight-indicator" class="highlight-indicator" style="display: none;">
-        <span>🔴</span> 高亮模式中
-    </div>
-    
-    <div id="legend">
-        <h3>节点类型图例</h3>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: #51c4d3;"></div>
-            <div class="legend-label">算法 (Algorithm)</div>
+        
+        <!-- 搜索框新位置 -->
+        <div id="search-container">
+            <div class="search-wrapper">
+                <div id="search-box">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" id="search-input" placeholder="搜索算法、分类或时间复杂度...">
+                </div>
+                <div id="search-results"></div>
+                <div id="search-actions">
+                    <button class="search-action-btn" id="highlight-btn">
+                        <span>✨</span> 高亮匹配项
+                    </button>
+                    <button class="search-action-btn" id="clear-search-btn">
+                        <span>❌</span> 清除搜索
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: #eea2a4;"></div>
-            <div class="legend-label">分类 (Category)</div>
+        
+        <div id="viz"></div>
+        
+        <!-- 高亮状态指示器 -->
+        <div id="highlight-indicator" class="highlight-indicator" style="display: none;">
+            <span>🔴</span> 高亮模式中
         </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: #fbda41;"></div>
-            <div class="legend-label">时间复杂度 (TimeComplexity)</div>
+        
+        <div id="legend">
+            <h3>节点类型图例</h3>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #51c4d3;"></div>
+                <div class="legend-label">算法 (Algorithm)</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #eea2a4;"></div>
+                <div class="legend-label">分类 (Category)</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #fbda41;"></div>
+                <div class="legend-label">时间复杂度 (TimeComplexity)</div>
+            </div>
         </div>
-    </div>
-    
-    <div id="info-panel">
-        <div class="info-item">
-            <div class="info-value" id="node-count">0</div>
-            <div class="info-label">节点数</div>
+        
+        <div id="info-panel">
+            <div class="info-item">
+                <div class="info-value" id="node-count">0</div>
+                <div class="info-label">节点数</div>
+            </div>
+            <div class="info-item">
+                <div class="info-value" id="edge-count">0</div>
+                <div class="info-label">关系数</div>
+            </div>
+            <div class="info-item">
+                <div class="info-value" id="algorithm-count">0</div>
+                <div class="info-label">算法数量</div>
+            </div>
         </div>
-        <div class="info-item">
-            <div class="info-value" id="edge-count">0</div>
-            <div class="info-label">关系数</div>
+        
+        <!-- 优化后的节点信息面板 -->
+        <div id="node-info">
+            <div id="node-info-header">
+                <h3 class="info-title">📝 节点详情</h3>
+                <button class="close-btn" id="close-info">×</button>
+            </div>
+            <div id="node-details-container">
+                <!-- 节点详情将在这里动态生成 -->
+            </div>
         </div>
-        <div class="info-item">
-            <div class="info-value" id="algorithm-count">0</div>
-            <div class="info-label">算法数量</div>
+        
+        <div id="status-bar">
+            <span id="status">准备连接数据库...</span>
         </div>
-    </div>
-    
-    <!-- 优化后的节点信息面板 -->
-    <div id="node-info">
-        <div id="node-info-header">
-            <h3 class="info-title">📝 节点详情</h3>
-            <button class="close-btn" id="close-info">×</button>
-        </div>
-        <div id="node-details-container">
-            <!-- 节点详情将在这里动态生成 -->
-        </div>
-    </div>
-    
-    <div id="status-bar">
-        <span id="status">准备连接数据库...</span>
     </div>
 
     <!-- 引入必要的库 -->
@@ -589,12 +778,98 @@
         document.addEventListener("DOMContentLoaded", async function() {
             // 修复报错：确保neo4j对象可用
             if (typeof neo4j === 'undefined') {
-                document.getElementById('status').textContent = "错误：neo4j-driver未加载成功";
+                document.getElementById('login-message').textContent = "错误：neo4j-driver未加载成功";
+                document.getElementById('login-message').style.display = 'block';
                 return;
             }
             
+            // 绑定登录按钮事件
+            document.getElementById('login-btn').addEventListener('click', handleLogin);
+            
+            // 绑定回车键登录
+            document.getElementById('password').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+        });
+        
+        // 处理登录
+        async function handleLogin() {
+            const username = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password');
+            const messageDiv = document.getElementById('login-message');
+            
+            // 显示加载状态
+            messageDiv.style.display = 'none';
+            document.getElementById('login-btn').textContent = '连接中...';
+            document.getElementById('login-btn').disabled = true;
+            
+            // 获取密码（如果为空则使用默认密码）
+            let password = passwordInput.value.trim();
+            let passwordAttempts = [];
+            
+            if (password) {
+                passwordAttempts.push(password);
+            } else {
+                passwordAttempts.push('neo4j');
+                passwordAttempts.push('12345678');
+            }
+            
+            // 尝试连接数据库
+            let driver = null;
+            let connected = false;
+            
+            for (const pwd of passwordAttempts) {
+                try {
+                    // 创建driver连接数据库
+                    driver = neo4j.driver(
+                        "bolt://localhost:7687",
+                        neo4j.auth.basic(username, pwd),
+                        { 
+                            encrypted: 'ENCRYPTION_OFF',
+                            disableLosslessIntegers: true 
+                        }
+                    );
+                    
+                    // 验证连接
+                    const session = driver.session();
+                    await session.run('RETURN 1');
+                    await session.close();
+                    
+                    connected = true;
+                    // 连接成功，跳出循环
+                    break;
+                } catch (error) {
+                    console.error(`尝试密码 ${pwd} 失败:`, error);
+                    // 继续尝试下一个密码
+                }
+            }
+            
+            if (connected) {
+                // 登录成功
+                document.getElementById('login-form').classList.add('login-hidden');
+                
+                setTimeout(() => {
+                    document.getElementById('login-container').style.display = 'none';
+                    document.getElementById('app-container').style.display = 'block';
+                    
+                    // 初始化主应用
+                    initApp(driver);
+                }, 600);
+            } else {
+                // 登录失败
+                messageDiv.textContent = '连接失败：密码尝试未成功';
+                messageDiv.style.display = 'block';
+                document.getElementById('login-btn').textContent = '连接数据库';
+                document.getElementById('login-btn').disabled = false;
+            }
+        }
+        
+        // 初始化主应用
+        function initApp(driver) {
             // 绑定按钮事件
-            document.getElementById('refresh-btn').addEventListener('click', loadData);
+            document.getElementById('refresh-btn').addEventListener('click', () => loadData(driver));
             document.getElementById('layout-btn').addEventListener('click', resetLayout);
             document.getElementById('zoom-in').addEventListener('click', zoomIn);
             document.getElementById('zoom-out').addEventListener('click', zoomOut);
@@ -627,8 +902,8 @@
             });
             
             // 初始加载数据
-            await loadData();
-        });
+            loadData(driver);
+        }
         
         // 节点颜色配置（根据您的三种标签）
         const labelColors = {
@@ -646,7 +921,7 @@
         
         // 全局变量
         let network = null;
-        let driver = null;
+        let currentDriver = null;
         let allNodes = new Map();
         let algorithmCount = 0;
         let nodesDataSet = null;
@@ -656,27 +931,15 @@
         let isAnimating = false; // 跟踪是否正在进行动画
         
         // 加载数据
-        async function loadData() {
+        async function loadData(driver) {
+            currentDriver = driver;
             updateStatus("正在连接数据库...");
             
             try {
-                // 创建driver连接数据库
-                driver = neo4j.driver(
-                    "bolt://localhost:7687",
-                    neo4j.auth.basic("neo4j", "LingLi051025"),
-                    { 
-                        encrypted: 'ENCRYPTION_OFF',
-                        disableLosslessIntegers: true 
-                    }
-                );
-                
-                // 验证连接
-                const session = driver.session();
-                await session.run('RETURN 1');
-                
                 updateStatus("正在执行查询...");
                 
                 // 执行查询 - 使用LIMIT 400
+                const session = driver.session();
                 const result = await session.run(`
                     MATCH (n)-[r]->(m)
                     RETURN n, r, m
@@ -1072,14 +1335,16 @@
             // 搜索匹配的节点
             const matchedNodes = [];
             
-            nodesDataSet.forEach(node => {
-                const nodeLabel = node.label.toLowerCase();
-                const nodeType = node.type.toLowerCase();
-                
-                if (nodeLabel.includes(searchTerm) || nodeType.includes(searchTerm)) {
-                    matchedNodes.push(node);
-                }
-            });
+            if (nodesDataSet) {
+                nodesDataSet.forEach(node => {
+                    const nodeLabel = node.label.toLowerCase();
+                    const nodeType = node.type.toLowerCase();
+                    
+                    if (nodeLabel.includes(searchTerm) || nodeType.includes(searchTerm)) {
+                        matchedNodes.push(node);
+                    }
+                });
+            }
             
             // 显示结果
             if (matchedNodes.length > 0) {
@@ -1184,25 +1449,27 @@
             // 查找匹配的节点
             const matchedNodeIds = [];
             
-            nodesDataSet.forEach(node => {
-                const nodeLabel = node.label.toLowerCase();
-                const nodeType = node.type.toLowerCase();
-                
-                if (nodeLabel.includes(searchTerm) || nodeType.includes(searchTerm)) {
-                    matchedNodeIds.push(node.id);
+            if (nodesDataSet) {
+                nodesDataSet.forEach(node => {
+                    const nodeLabel = node.label.toLowerCase();
+                    const nodeType = node.type.toLowerCase();
                     
-                    // 高亮匹配的节点
-                    nodesDataSet.update({
-                        id: node.id,
-                        borderWidth: 5,
-                        borderColor: '#ff6b6b',
-                        color: {
-                            background: node.color.background,
-                            border: '#ff6b6b'
-                        }
-                    });
-                }
-            });
+                    if (nodeLabel.includes(searchTerm) || nodeType.includes(searchTerm)) {
+                        matchedNodeIds.push(node.id);
+                        
+                        // 高亮匹配的节点
+                        nodesDataSet.update({
+                            id: node.id,
+                            borderWidth: 5,
+                            borderColor: '#ff6b6b',
+                            color: {
+                                background: node.color.background,
+                                border: '#ff6b6b'
+                            }
+                        });
+                    }
+                });
+            }
             
             currentHighlightedIds = matchedNodeIds;
             isHighlighted = true;

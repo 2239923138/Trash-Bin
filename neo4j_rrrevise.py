@@ -3,7 +3,7 @@ import os
 from py2neo import Graph, Node, Relationship
 
 # 1. 连接 Neo4j（请替换用户名和密码）
-graph = Graph("bolt://localhost:7687", auth=("neo4j", "2239923138"))
+graph = Graph("bolt://localhost:7687", auth=("neo4j", "12345678"))
 
 current_dir = os.path.dirname(__file__)
 
