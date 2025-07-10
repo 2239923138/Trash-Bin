@@ -50,7 +50,7 @@ with open(resource_path, encoding="utf-8") as f:
         )
         graph.merge(alg_node, "Algorithm", "name")
 
-        # 2.3 建立 BELONGS_TO 关系：Algorithm -> Category
+        # 2.3 建立 属于 关系：Algorithm -> Category
         rel_cat = Relationship(alg_node, "属于", cat_node)
         graph.merge(rel_cat)
 
