@@ -11,7 +11,7 @@ def retrieval(query):
     path_list = list(Path("my_knowledge").glob("*.txt"))
     for path in path_list:
         if path.stem in query:
-            context += path.read_text(encoding="utf-8")  # 读取
+            context += path.read_text(encoding="utf-8") 
             context += "\n\n"
     return context
 
