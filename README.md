@@ -7,6 +7,6 @@
 条目名称|条目内容|版本号|备注
 ----|-----|-----|-----
 程序设计语言|JavaScript、Python|node.js v22.17.0、Python3.13、Python3.9
-IDE|visual studio code|1.101.2
+IDE|visual studio code、PyCharm|1.101.2、2025.1.3
 框架|Django|5.2.4
 平台|
