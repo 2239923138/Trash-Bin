@@ -27,6 +27,8 @@
             align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 200;
         }
         
         #title {
@@ -222,26 +224,227 @@
             font-size: 14px;
         }
         
-        /* 搜索面板 */
-        #search-panel {
+        /* 搜索框新位置 */
+        #search-container {
             position: absolute;
-            top: 90px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 15px;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 300;
+            width: 450px;
+            transition: all 0.4s ease;
+        }
+        
+        .search-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        #search-box {
+            display: flex;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 30px;
+            padding: 10px 20px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(81, 196, 211, 0.3);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        #search-box:focus-within {
+            border-color: #51c4d3;
+            box-shadow: 0 0 25px rgba(81, 196, 211, 0.7);
+            transform: translateY(-3px);
         }
         
         #search-input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex: 1;
+            background: transparent;
+            border: none;
             color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        #search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        #search-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .search-action-btn {
+            background: rgba(81, 196, 211, 0.3);
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .search-action-btn:hover {
+            background: rgba(81, 196, 211, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        #search-results {
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 10px;
+            margin-top: 15px;
+            display: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .search-result-item {
+            padding: 12px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .search-result-item:hover {
+            background: rgba(81, 196, 211, 0.3);
+            transform: translateX(5px);
+        }
+        
+        .result-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .result-label {
+            flex: 1;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        
+        .result-type {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-left: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 搜索图标样式 */
+        .search-icon {
+            color: #51c4d3;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 10px;
+        }
+        
+        /* 搜索框聚焦动画 */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(81, 196, 211, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(81, 196, 211, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(81, 196, 211, 0); }
+        }
+        
+        .search-focused {
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* 搜索结果空状态 */
+        .no-results {
+            padding: 15px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+        
+        /* 移动设备适配 */
+        @media (max-width: 768px) {
+            #search-container {
+                width: 90%;
+                top: 15px;
+            }
+            
+            #header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            #title {
+                font-size: 1.5rem;
+            }
+            
+            #controls {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .control-btn {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            
+            #legend {
+                top: 150px;
+                right: 10px;
+                max-width: 200px;
+                padding: 15px;
+            }
+            
+            #node-info {
+                top: 150px;
+                left: 10px;
+                max-width: calc(100% - 20px);
+            }
+        }
+        
+        /* 高亮状态指示器 */
+        .highlight-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 107, 107, 0.3);
             padding: 8px 15px;
             border-radius: 20px;
-            width: 250px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+            animation: pulse-highlight 2s infinite;
+        }
+        
+        @keyframes pulse-highlight {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.3); }
+            70% { box-shadow: 0 0 0 8px rgba(255, 107, 107, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
         }
     </style>
 </head>
@@ -253,7 +456,7 @@
                 <span>🔄</span> 刷新数据
             </button>
             <button class="control-btn" id="layout-btn">
-                <span>🔀</span> 恢复比例
+                <span>🔀</span> 重新布局
             </button>
             <button class="control-btn" id="zoom-in">
                 <span>🔍</span> 放大
@@ -264,7 +467,31 @@
         </div>
     </div>
     
+    <!-- 搜索框新位置 -->
+    <div id="search-container">
+        <div class="search-wrapper">
+            <div id="search-box">
+                <div class="search-icon">🔍</div>
+                <input type="text" id="search-input" placeholder="搜索算法、分类或时间复杂度...">
+            </div>
+            <div id="search-results"></div>
+            <div id="search-actions">
+                <button class="search-action-btn" id="highlight-btn">
+                    <span>✨</span> 高亮匹配项
+                </button>
+                <button class="search-action-btn" id="clear-search-btn">
+                    <span>❌</span> 清除搜索
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div id="viz"></div>
+    
+    <!-- 高亮状态指示器 -->
+    <div id="highlight-indicator" class="highlight-indicator" style="display: none;">
+        <span>🔴</span> 高亮模式中
+    </div>
     
     <div id="legend">
         <h3>节点类型图例</h3>
@@ -302,7 +529,7 @@
         <h3 class="info-title">📝 节点详情</h3>
         <div id="node-details"></div>
     </div>
-
+    
     <div id="status-bar">
         <span id="status">准备连接数据库...</span>
     </div>
@@ -326,6 +553,32 @@
             document.getElementById('zoom-in').addEventListener('click', zoomIn);
             document.getElementById('zoom-out').addEventListener('click', zoomOut);
             document.getElementById('close-info').addEventListener('click', closeNodeInfo);
+            document.getElementById('highlight-btn').addEventListener('click', highlightMatches);
+            document.getElementById('clear-search-btn').addEventListener('click', clearSearch);
+            
+            // 搜索输入框事件
+            const searchInput = document.getElementById('search-input');
+            const searchBox = document.getElementById('search-box');
+            
+            searchInput.addEventListener('input', handleSearchInput);
+            searchInput.addEventListener('focus', function() {
+                searchBox.classList.add('search-focused');
+            });
+            searchInput.addEventListener('blur', function() {
+                searchBox.classList.remove('search-focused');
+            });
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    highlightMatches();
+                }
+            });
+            
+            // 点击其他地方关闭搜索结果
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#search-container')) {
+                    document.getElementById('search-results').style.display = 'none';
+                }
+            });
             
             // 初始加载数据
             await loadData();
@@ -350,6 +603,11 @@
         let driver = null;
         let allNodes = new Map();
         let algorithmCount = 0;
+        let nodesDataSet = null;
+        let edgesDataSet = null;
+        let isHighlighted = false;
+        let currentHighlightedIds = [];
+        let isAnimating = false; // 跟踪是否正在进行动画
         
         // 加载数据
         async function loadData() {
@@ -395,13 +653,19 @@
         
         // 处理数据
         function processData(result) {
-            const nodes = new vis.DataSet();
-            const edges = new vis.DataSet();
+            nodesDataSet = new vis.DataSet();
+            edgesDataSet = new vis.DataSet();
             allNodes.clear();
             algorithmCount = 0;
+            isHighlighted = false;
+            currentHighlightedIds = [];
+            isAnimating = false;
             
             // 隐藏节点信息面板
             closeNodeInfo();
+            
+            // 隐藏高亮指示器
+            document.getElementById('highlight-indicator').style.display = 'none';
             
             // 临时存储节点映射
             const nodeMap = new Map();
@@ -418,6 +682,7 @@
                         if (!nodeMap.has(nodeId)) {
                             const label = getNodeLabel(node);
                             const color = getNodeColor(node);
+                            const nodeType = node.labels[0] || "Node";
                             
                             // 统计算法节点数量
                             if (node.labels.includes("Algorithm")) {
@@ -442,6 +707,7 @@
                                 },
                                 properties: node.properties,
                                 labels: node.labels,
+                                type: nodeType,
                                 font: {
                                     size: 14,
                                     face: 'Segoe UI, Microsoft YaHei',
@@ -449,12 +715,12 @@
                                     strokeWidth: 0,
                                     bold: false
                                 },
-                                // 关键修改：标签显示在节点下方
                                 shape: 'dot',
-                                size: 25
+                                size: 25,
+                                borderWidth: 2
                             };
                             
-                            nodes.add(nodeData);
+                            nodesDataSet.add(nodeData);
                             nodeMap.set(nodeId, true);
                             allNodes.set(nodeId, nodeData);
                         }
@@ -471,7 +737,7 @@
                     const relColor = relationshipColors[relType] || '#C06C84';
                     
                     // 添加关系
-                    edges.add({
+                    edgesDataSet.add({
                         id: relId,
                         from: rel.start.toString(),
                         to: rel.end.toString(),
@@ -490,13 +756,13 @@
             });
             
             // 更新统计信息
-            document.getElementById('node-count').textContent = nodes.length;
-            document.getElementById('edge-count').textContent = edges.length;
+            document.getElementById('node-count').textContent = nodesDataSet.length;
+            document.getElementById('edge-count').textContent = edgesDataSet.length;
             document.getElementById('algorithm-count').textContent = algorithmCount;
             
             // 渲染图形
             const container = document.getElementById('viz');
-            const data = { nodes, edges };
+            const data = { nodes: nodesDataSet, edges: edgesDataSet };
             
             const options = {
                 nodes: {
@@ -567,13 +833,26 @@
             
             // 初始布局
             setTimeout(() => {
-                network.fit({
-                    animation: {
-                        duration: 1000,
-                        easingFunction: 'easeInOutQuad'
-                    }
-                });
+                safeFitView();
             }, 500);
+        }
+        
+        // 安全缩放视图 - 避免重复动画
+        function safeFitView(options) {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            network.fit(options || {
+                animation: {
+                    duration: 1000,
+                    easingFunction: 'easeInOutQuad'
+                }
+            });
+            
+            // 动画完成后重置状态
+            setTimeout(() => {
+                isAnimating = false;
+            }, 1000);
         }
         
         // 获取节点标签
@@ -648,19 +927,17 @@
         // 重置布局
         function resetLayout() {
             if (network) {
-                network.fit({
-                    animation: {
-                        duration: 1000,
-                        easingFunction: 'easeInOutQuad'
-                    }
-                });
-                updateStatus("已恢复比例");
+                safeFitView();
+                updateStatus("已重新布局");
             }
         }
         
         // 放大视图
         function zoomIn() {
             if (network) {
+                if (isAnimating) return;
+                
+                isAnimating = true;
                 const scale = network.getScale() * 1.3;
                 network.moveTo({
                     scale: scale,
@@ -669,12 +946,19 @@
                         easingFunction: 'easeInOutQuad'
                     }
                 });
+                
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 500);
             }
         }
         
         // 缩小视图
         function zoomOut() {
             if (network) {
+                if (isAnimating) return;
+                
+                isAnimating = true;
                 const scale = network.getScale() * 0.7;
                 network.moveTo({
                     scale: scale,
@@ -683,6 +967,10 @@
                         easingFunction: 'easeInOutQuad'
                     }
                 });
+                
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 500);
             }
         }
         
@@ -705,6 +993,213 @@
                 (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
                 (B < 255 ? (B < 1 ? 0 : B) : 255)
             ).toString(16).slice(1);
+        }
+        
+        // 搜索输入处理
+        function handleSearchInput() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('search-results');
+            
+            if (searchTerm.length === 0) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            // 清空之前的结果
+            resultsContainer.innerHTML = '';
+            
+            // 搜索匹配的节点
+            const matchedNodes = [];
+            
+            nodesDataSet.forEach(node => {
+                const nodeLabel = node.label.toLowerCase();
+                const nodeType = node.type.toLowerCase();
+                
+                if (nodeLabel.includes(searchTerm) || nodeType.includes(searchTerm)) {
+                    matchedNodes.push(node);
+                }
+            });
+            
+            // 显示结果
+            if (matchedNodes.length > 0) {
+                resultsContainer.style.display = 'block';
+                
+                matchedNodes.forEach(node => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'search-result-item';
+                    resultItem.innerHTML = `
+                        <div class="result-color" style="background-color: ${labelColors[node.type] || '#C7D0D8'}"></div>
+                        <div class="result-label">${node.label}</div>
+                        <div class="result-type">${node.type}</div>
+                    `;
+                    
+                    resultItem.addEventListener('click', () => {
+                        focusNode(node.id);
+                    });
+                    
+                    resultsContainer.appendChild(resultItem);
+                });
+            } else {
+                resultsContainer.style.display = 'block';
+                resultsContainer.innerHTML = '<div class="no-results">没有找到匹配的结果</div>';
+            }
+        }
+        
+        // 聚焦到特定节点
+        function focusNode(nodeId) {
+            if (!network) return;
+            
+            // 聚焦到节点
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            network.focus(nodeId, {
+                scale: 1.5,
+                animation: {
+                    duration: 1000,
+                    easingFunction: 'easeInOutQuad'
+                }
+            });
+            
+            // 高亮节点
+            highlightNode(nodeId);
+            
+            // 显示节点信息
+            showNodeInfo(nodeId);
+            
+            // 关闭搜索结果
+            document.getElementById('search-results').style.display = 'none';
+            
+            // 重置动画状态
+            setTimeout(() => {
+                isAnimating = false;
+            }, 1000);
+        }
+        
+        // 高亮特定节点
+        function highlightNode(nodeId) {
+            if (!nodesDataSet) return;
+            
+            // 重置所有节点样式
+            if (isHighlighted) {
+                clearSearch();
+            }
+            
+            // 高亮选中的节点
+            const node = nodesDataSet.get(nodeId);
+            if (node) {
+                nodesDataSet.update({
+                    id: nodeId,
+                    borderWidth: 5,
+                    borderColor: '#ff6b6b',
+                    color: {
+                        background: node.color.background,
+                        border: '#ff6b6b'
+                    }
+                });
+                
+                currentHighlightedIds = [nodeId];
+                isHighlighted = true;
+                
+                // 显示高亮指示器
+                document.getElementById('highlight-indicator').style.display = 'flex';
+            }
+        }
+        
+        // 高亮所有匹配的节点
+        function highlightMatches() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            
+            if (searchTerm.length === 0) {
+                updateStatus("请输入搜索内容");
+                return;
+            }
+            
+            // 重置所有节点样式
+            if (isHighlighted) {
+                clearSearch();
+            }
+            
+            // 查找匹配的节点
+            const matchedNodeIds = [];
+            
+            nodesDataSet.forEach(node => {
+                const nodeLabel = node.label.toLowerCase();
+                const nodeType = node.type.toLowerCase();
+                
+                if (nodeLabel.includes(searchTerm) || nodeType.includes(searchTerm)) {
+                    matchedNodeIds.push(node.id);
+                    
+                    // 高亮匹配的节点
+                    nodesDataSet.update({
+                        id: node.id,
+                        borderWidth: 5,
+                        borderColor: '#ff6b6b',
+                        color: {
+                            background: node.color.background,
+                            border: '#ff6b6b'
+                        }
+                    });
+                }
+            });
+            
+            currentHighlightedIds = matchedNodeIds;
+            isHighlighted = true;
+            
+            if (matchedNodeIds.length > 0) {
+                updateStatus(`找到 ${matchedNodeIds.length} 个匹配项`);
+                
+                // 显示高亮指示器
+                document.getElementById('highlight-indicator').style.display = 'flex';
+                
+                // 安全缩放视图（避免重复动画）
+                safeFitView({
+                    nodes: matchedNodeIds,
+                    animation: {
+                        duration: 1000,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+                
+                // 关闭搜索结果
+                document.getElementById('search-results').style.display = 'none';
+            } else {
+                updateStatus("没有找到匹配的结果");
+            }
+        }
+        
+        // 清除搜索
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-results').style.display = 'none';
+            
+            // 隐藏高亮指示器
+            document.getElementById('highlight-indicator').style.display = 'none';
+            
+            if (!nodesDataSet || !isHighlighted) return;
+            
+            // 重置所有高亮节点的样式
+            currentHighlightedIds.forEach(nodeId => {
+                const node = nodesDataSet.get(nodeId);
+                if (node) {
+                    nodesDataSet.update({
+                        id: nodeId,
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF',
+                        color: {
+                            background: node.color.background,
+                            border: '#FFFFFF'
+                        }
+                    });
+                }
+            });
+            
+            currentHighlightedIds = [];
+            isHighlighted = false;
+            
+            // 重置视图
+            safeFitView();
+            updateStatus("搜索已清除");
         }
     </script>
 </body>
