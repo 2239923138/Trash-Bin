@@ -3,7 +3,7 @@ from openai import OpenAI
 import os
 from pathlib import Path
 
-# 设置 API 客户端
+# 设置 API 
 api_key = os.environ["DEEPSEEK_API_KEY"]
 client = OpenAI(base_url="https://api.deepseek.com", api_key=api_key)
 
