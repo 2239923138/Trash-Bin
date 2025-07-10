@@ -144,6 +144,34 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
         
+        #login-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+        
+        .remember-me input {
+            margin-right: 8px;
+        }
+        
+        .forgot-password {
+            color: #51c4d3;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .forgot-password:hover {
+            text-decoration: underline;
+            color: #3e9aab;
+        }
+        
         #login-message {
             margin-top: 20px;
             padding: 12px;
@@ -578,6 +606,12 @@
                 max-width: 90%;
             }
             
+            #login-options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
             #search-container {
                 width: 90%;
                 top: 15px;
@@ -663,10 +697,18 @@
                     <input type="password" id="password" class="input-field" placeholder="请输入您的密码">
                 </div>
                 
+                <div id="login-options">
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember-password" checked>
+                        <label for="remember-password">记住密码</label>
+                    </div>
+                    <a href="#" class="forgot-password" id="forgot-password">清除已保存的密码</a>
+                </div>
+                
                 <button type="button" id="login-btn" class="login-btn">连接数据库</button>
                 
                 <div id="password-hint">
-                    提示：如果密码为空，将默认输入密码"neo4j"
+                    提示：如果密码为空，将自动填入默认密码
                 </div>
                 
                 <div id="login-message">
@@ -785,6 +827,7 @@
             
             // 绑定登录按钮事件
             document.getElementById('login-btn').addEventListener('click', handleLogin);
+            document.getElementById('forgot-password').addEventListener('click', clearSavedCredentials);
             
             // 绑定回车键登录
             document.getElementById('password').addEventListener('keyup', function(e) {
@@ -792,16 +835,81 @@
                     handleLogin();
                 }
             });
+            
+            // 检查是否有保存的凭证
+            const savedCredentials = getSavedCredentials();
+            if (savedCredentials) {
+                document.getElementById('password').value = savedCredentials.password;
+                document.getElementById('remember-password').checked = true;
+                
+                // 显示自动登录提示
+                document.getElementById('login-btn').textContent = '自动登录中...';
+                
+                // 延迟执行自动登录，让用户看到提示
+                setTimeout(() => {
+                    handleLogin();
+                }, 1000);
+            }
         });
+        
+        // 获取保存的凭证
+        function getSavedCredentials() {
+            const saved = localStorage.getItem('neo4j_credentials');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    console.error('解析保存的凭证失败', e);
+                    return null;
+                }
+            }
+            return null;
+        }
+        
+        // 保存凭证到localStorage
+        function saveCredentials(username, password) {
+            const credentials = {
+                username: username,
+                password: password
+            };
+            localStorage.setItem('neo4j_credentials', JSON.stringify(credentials));
+        }
+        
+        // 清除保存的凭证
+        function clearSavedCredentials(event) {
+            event.preventDefault();
+            localStorage.removeItem('neo4j_credentials');
+            document.getElementById('password').value = '';
+            document.getElementById('remember-password').checked = false;
+            
+            // 显示提示
+            const messageDiv = document.getElementById('login-message');
+            messageDiv.textContent = '保存的密码已清除';
+            messageDiv.style.display = 'block';
+            messageDiv.style.backgroundColor = 'rgba(81, 196, 211, 0.2)';
+            messageDiv.style.borderColor = 'rgba(81, 196, 211, 0.5)';
+            messageDiv.style.color = '#51c4d3';
+            
+            // 3秒后隐藏提示
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
         
         // 处理登录
         async function handleLogin() {
             const username = document.getElementById('username').value;
             const passwordInput = document.getElementById('password');
+            const rememberPassword = document.getElementById('remember-password').checked;
             const messageDiv = document.getElementById('login-message');
             
-            // 显示加载状态
+            // 重置消息样式
             messageDiv.style.display = 'none';
+            messageDiv.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
+            messageDiv.style.borderColor = 'rgba(255, 107, 107, 0.5)';
+            messageDiv.style.color = '#ff6b6b';
+            
+            // 显示加载状态
             document.getElementById('login-btn').textContent = '连接中...';
             document.getElementById('login-btn').disabled = true;
             
@@ -819,6 +927,7 @@
             // 尝试连接数据库
             let driver = null;
             let connected = false;
+            let successfulPassword = '';
             
             for (const pwd of passwordAttempts) {
                 try {
@@ -838,6 +947,7 @@
                     await session.close();
                     
                     connected = true;
+                    successfulPassword = pwd;
                     // 连接成功，跳出循环
                     break;
                 } catch (error) {
@@ -847,6 +957,14 @@
             }
             
             if (connected) {
+                // 如果用户选择了"记住密码"，保存凭证
+                if (rememberPassword) {
+                    saveCredentials(username, successfulPassword);
+                } else {
+                    // 如果未选择记住密码，清除之前保存的凭证
+                    localStorage.removeItem('neo4j_credentials');
+                }
+                
                 // 登录成功
                 document.getElementById('login-form').classList.add('login-hidden');
                 
@@ -859,7 +977,7 @@
                 }, 600);
             } else {
                 // 登录失败
-                messageDiv.textContent = '连接失败：密码尝试未成功';
+                messageDiv.textContent = '连接失败：密码错误，请重试';
                 messageDiv.style.display = 'block';
                 document.getElementById('login-btn').textContent = '连接数据库';
                 document.getElementById('login-btn').disabled = false;
