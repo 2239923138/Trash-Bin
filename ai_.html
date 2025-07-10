@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <title>人机交互学习算法</title>
@@ -9,7 +10,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -19,105 +20,146 @@
 
         /* 主容器样式 */
         .container {
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 40px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            padding: 60px;
             width: 90%;
-            max-width: 600px;
+            max-width: 700px;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        /* 定义标题浮现动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 定义主容器滑入动画 */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* 标题样式 */
         h1 {
-            color: #333;
+            color: #0097a7;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            animation: fadeIn 1s ease-out;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         /* 标签样式 */
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: 600;
-            color: #555;
+            color: #00838f;
+            font-size: 18px;
         }
 
         /* 输入框和文本域样式 */
-        input[type="text"], textarea {
+        input[type="text"],
+        textarea {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
+            padding: 15px;
+            margin-bottom: 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        input[type="text"]:focus, textarea:focus {
+        input[type="text"]:focus,
+        textarea:focus {
             border-color: #007bff;
             outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
         }
 
         /* 按钮样式 */
         button {
-            background-color: #007bff;
+            background: linear-gradient(135deg, #0097a7, #00838f);
             color: white;
-            padding: 12px 20px;
+            padding: 15px 25px;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
+            font-size: 20px;
+            transition: all 0.3s ease;
             display: block;
             width: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         button:hover {
-            background-color: #0056b3;
+            background: linear-gradient(135deg, #00838f, #006064);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
 
         /* 结果展示区域样式 */
         .result {
-            margin-top: 30px;
-            padding: 20px;
-            border: 1px solid #eaeaea;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+            margin-top: 50px;
+            padding: 30px;
+            border: none;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-out;
         }
 
         /* 错误提示样式 */
         .error {
-            color: red;
-            margin-bottom: 15px;
+            color: #e53935;
+            margin-bottom: 20px;
             font-weight: 600;
+            font-size: 18px;
         }
 
         /* 问题和回答标题样式 */
         .result h3 {
-            color: #333;
-            margin-bottom: 8px;
+            color: #0097a7;
+            margin-bottom: 10px;
+            font-size: 22px;
         }
 
         /* 问题和回答内容样式 */
         .result p {
-            color: #555;
-            line-height: 1.6;
+            color: #000000;
+            line-height: 1.8;
+            font-size: 18px;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1>人机交互学习算法</h1>
+        <h1>请问我一些与算法有关的问题吧</h1>
         <!-- 表单提交到当前页面，用 POST 方法 -->
         <form method="post">
             <label for="query">请输入问题:</label>
             {% if answer == "请输入有效的问题。" %}
-                <p class="error">{{ answer }}</p>
+            <p class="error">{{ answer }}</p>
             {% endif %}
             <input type="text" id="query" name="query" placeholder="在这里输入你的问题">
             <button type="submit">提交</button>
         </form>
-        
+
         <!-- 有 query 时，展示问题和回答 -->
         {% if query and answer != "请输入有效的问题。" %}
         <div class="result">
@@ -129,4 +171,5 @@
         {% endif %}
     </div>
 </body>
+
 </html>

@@ -10,3 +10,8 @@
 IDE|visual studio code、PyCharm|1.101.2、2025.1.3
 框架|Django|5.2.4
 平台|
+
+
+| 接口名称 | 接口功能 | 输入变量或对象 | 输出对象 | 备注 |
+| ---- | ---- | ---- | ---- |---- |
+| DeepseekAPI | 调用Deepseek接口 | 询问的问题 | Deepseek回答的答案 | |
