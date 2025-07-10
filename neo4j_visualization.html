@@ -271,10 +271,17 @@
             border-radius: 8px;
             transition: all 0.3s;
             background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
         }
         
         .legend-item:hover {
             background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-5px);
+        }
+        
+        .legend-item.active {
+            background: rgba(81, 196, 211, 0.2);
+            border-left: 3px solid #51c4d3;
             transform: translateX(-5px);
         }
         
@@ -599,6 +606,30 @@
             font-style: italic;
         }
         
+        /* 高亮状态指示器 */
+        .highlight-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 107, 107, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+            animation: pulse-highlight 2s infinite;
+        }
+        
+        @keyframes pulse-highlight {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.3); }
+            70% { box-shadow: 0 0 0 8px rgba(255, 107, 107, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+        }
+        
         /* 移动设备适配 */
         @media (max-width: 768px) {
             #login-form {
@@ -649,30 +680,6 @@
                 left: 10px;
                 max-width: calc(100% - 20px);
             }
-        }
-        
-        /* 高亮状态指示器 */
-        .highlight-indicator {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 107, 107, 0.3);
-            padding: 8px 15px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 107, 107, 0.5);
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 100;
-            animation: pulse-highlight 2s infinite;
-        }
-        
-        @keyframes pulse-highlight {
-            0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.3); }
-            70% { box-shadow: 0 0 0 8px rgba(255, 107, 107, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
         }
     </style>
 </head>
@@ -738,7 +745,7 @@
             </div>
         </div>
         
-        <!-- 搜索框新位置 -->
+        <!-- 搜索框 -->
         <div id="search-container">
             <div class="search-wrapper">
                 <div id="search-box">
@@ -766,15 +773,15 @@
         
         <div id="legend">
             <h3>节点类型图例</h3>
-            <div class="legend-item">
+            <div class="legend-item" data-label="Algorithm">
                 <div class="legend-color" style="background-color: #51c4d3;"></div>
                 <div class="legend-label">算法 (Algorithm)</div>
             </div>
-            <div class="legend-item">
+            <div class="legend-item" data-label="Category">
                 <div class="legend-color" style="background-color: #eea2a4;"></div>
                 <div class="legend-label">分类 (Category)</div>
             </div>
-            <div class="legend-item">
+            <div class="legend-item" data-label="TimeComplexity">
                 <div class="legend-color" style="background-color: #fbda41;"></div>
                 <div class="legend-label">时间复杂度 (TimeComplexity)</div>
             </div>
@@ -1019,6 +1026,15 @@
                 }
             });
             
+            // 绑定图例点击事件
+            const legendItems = document.querySelectorAll('.legend-item');
+            legendItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const label = this.dataset.label;
+                    toggleLegendHighlight(label, this);
+                });
+            });
+            
             // 初始加载数据
             loadData(driver);
         }
@@ -1047,6 +1063,8 @@
         let isHighlighted = false;
         let currentHighlightedIds = [];
         let isAnimating = false; // 跟踪是否正在进行动画
+        let currentLegendLabel = null;
+        let currentLegendItem = null;
         
         // 加载数据
         async function loadData(driver) {
@@ -1087,6 +1105,11 @@
             isHighlighted = false;
             currentHighlightedIds = [];
             isAnimating = false;
+            currentLegendLabel = null;
+            
+            // 重置图例状态
+            const legendItems = document.querySelectorAll('.legend-item');
+            legendItems.forEach(item => item.classList.remove('active'));
             
             // 隐藏节点信息面板
             closeNodeInfo();
@@ -1643,9 +1666,87 @@
             currentHighlightedIds = [];
             isHighlighted = false;
             
+            // 清除图例高亮状态
+            if (currentLegendItem) {
+                currentLegendItem.classList.remove('active');
+                currentLegendItem = null;
+                currentLegendLabel = null;
+            }
+            
             // 重置视图
             safeFitView();
             updateStatus("搜索已清除");
+        }
+        
+        // 图例点击高亮功能
+        function toggleLegendHighlight(label, legendItem) {
+            // 如果点击的是当前激活的图例项，则清除高亮
+            if (currentLegendLabel === label) {
+                clearSearch();
+                return;
+            }
+            
+            // 清除之前的高亮（包括搜索高亮）
+            clearSearch();
+            
+            // 更新当前图例状态
+            currentLegendLabel = label;
+            currentLegendItem = legendItem;
+            
+            // 添加激活状态
+            legendItem.classList.add('active');
+            
+            // 收集具有该标签的所有节点ID
+            const nodeIds = [];
+            if (nodesDataSet) {
+                nodesDataSet.forEach(node => {
+                    if (node.labels && node.labels.includes(label)) {
+                        nodeIds.push(node.id);
+                    }
+                });
+            }
+            
+            // 如果没有节点，则显示消息并返回
+            if (nodeIds.length === 0) {
+                updateStatus(`没有找到标签为 ${label} 的节点`);
+                return;
+            }
+            
+            // 高亮这些节点
+            nodeIds.forEach(nodeId => {
+                const node = nodesDataSet.get(nodeId);
+                if (node) {
+                    nodesDataSet.update({
+                        id: nodeId,
+                        borderWidth: 5,
+                        borderColor: '#ff6b6b',
+                        color: {
+                            background: node.color.background,
+                            border: '#ff6b6b'
+                        }
+                    });
+                }
+            });
+            
+            // 更新全局变量
+            currentHighlightedIds = nodeIds;
+            isHighlighted = true;
+            
+            // 更新高亮指示器
+            const highlightIndicator = document.getElementById('highlight-indicator');
+            highlightIndicator.style.display = 'flex';
+            highlightIndicator.innerHTML = `<span>🔴</span> 高亮模式中: ${label} (${nodeIds.length}个节点)`;
+            
+            // 缩放视图
+            safeFitView({
+                nodes: nodeIds,
+                animation: {
+                    duration: 1000,
+                    easingFunction: 'easeInOutQuad'
+                }
+            });
+            
+            updateStatus(`高亮了 ${nodeIds.length} 个标签为 ${label} 的节点`);
         }
     </script>
 </body>
