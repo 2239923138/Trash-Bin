@@ -3,18 +3,15 @@ from openai import OpenAI
 import os
 from pathlib import Path
 
-# 设置 API 客户端
 api_key = os.environ["DEEPSEEK_API_KEY"]
 client = OpenAI(base_url="https://api.deepseek.com", api_key=api_key)
 
 def retrieval(query):
     context = ""
-    # 遍历所有文件
     path_list = list(Path("my_knowledge").glob("*.txt"))
-    # 找到相关文件
     for path in path_list:
         if path.stem in query:
-            context += path.read_text(encoding="utf-8")  # 读取
+            context += path.read_text(encoding="utf-8") 
             context += "\n\n"
     return context
 
@@ -52,7 +49,6 @@ def get_answer(question):
 def index():
     query = None
     answer = None
-    # 如果是 POST 请求，说明用户点了提交，处理表单数据
     if request.method == 'POST':
         query = request.form.get('query')  # 获取前端输入的问题
         if query:

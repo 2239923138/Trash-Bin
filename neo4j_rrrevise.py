@@ -11,8 +11,8 @@ resource_path = os.path.join(current_dir, "NewerResource.csv")
 
 graph.run("MATCH (n) DETACH DELETE n")
 
-# 2. 从 CSV 读取数据，创建 Category、Algorithm 节点及它们之间的 BELONGS_TO 关系
-#    并将非“多变”的 TimeComplexity 拆分为独立节点、与 Algorithm 建立 HAS_TIME_COMPLEXITY 关系
+# 2. 从 CSV 读取数据，创建 Category、Algorithm 节点及它们之间的 属于 关系
+#    并将非“多变”的 TimeComplexity 拆分为独立节点、与 Algorithm 建立 复杂度 关系
 with open(resource_path, encoding="utf-8") as f:
     reader = csv.DictReader(f)
     for row in reader:
@@ -50,7 +50,7 @@ with open(resource_path, encoding="utf-8") as f:
         )
         graph.merge(alg_node, "Algorithm", "name")
 
-        # 2.3 建立 BELONGS_TO 关系：Algorithm -> Category
+        # 2.3 建立 属于 关系：Algorithm -> Category
         rel_cat = Relationship(alg_node, "属于", cat_node)
         graph.merge(rel_cat)
 
