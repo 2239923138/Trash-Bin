@@ -49,7 +49,6 @@ def get_answer(question):
 def index():
     query = None
     answer = None
-    # 如果是 POST 请求，说明用户点了提交，处理表单数据
     if request.method == 'POST':
         query = request.form.get('query')  # 获取前端输入的问题
         if query:
