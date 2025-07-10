@@ -3,15 +3,12 @@ from openai import OpenAI
 import os
 from pathlib import Path
 
-# 设置 API 
 api_key = os.environ["DEEPSEEK_API_KEY"]
 client = OpenAI(base_url="https://api.deepseek.com", api_key=api_key)
 
 def retrieval(query):
     context = ""
-    # 遍历所有文件
     path_list = list(Path("my_knowledge").glob("*.txt"))
-    # 找到相关文件
     for path in path_list:
         if path.stem in query:
             context += path.read_text(encoding="utf-8")  # 读取
