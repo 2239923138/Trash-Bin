@@ -154,27 +154,64 @@
             opacity: 0.8;
         }
         
+        /* 节点信息面板样式优化 */
         #node-info {
             position: absolute;
             top: 90px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 15px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             max-width: 320px;
+            max-height: 70vh;
             display: none;
             z-index: 100;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        #node-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .info-title {
-            font-size: 18px;
-            margin-bottom: 15px;
+            font-size: 20px;
             color: #fbda41;
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+        
+        #node-details-container {
+            max-height: calc(70vh - 100px);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        /* 自定义滚动条 */
+        #node-details-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #node-details-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        #node-details-container::-webkit-scrollbar-thumb {
+            background: #51c4d3;
+            border-radius: 4px;
+        }
+        
+        #node-details-container::-webkit-scrollbar-thumb:hover {
+            background: #3e9aab;
         }
         
         .property-row {
@@ -194,12 +231,10 @@
         .property-value {
             flex: 1;
             word-break: break-word;
+            line-height: 1.5;
         }
         
         .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             background: rgba(255, 255, 255, 0.1);
             border: none;
             color: white;
@@ -210,6 +245,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: rotate(90deg);
         }
         
         #status-bar {
@@ -524,10 +565,15 @@
         </div>
     </div>
     
+    <!-- 优化后的节点信息面板 -->
     <div id="node-info">
-        <button class="close-btn" id="close-info">×</button>
-        <h3 class="info-title">📝 节点详情</h3>
-        <div id="node-details"></div>
+        <div id="node-info-header">
+            <h3 class="info-title">📝 节点详情</h3>
+            <button class="close-btn" id="close-info">×</button>
+        </div>
+        <div id="node-details-container">
+            <!-- 节点详情将在这里动态生成 -->
+        </div>
     </div>
     
     <div id="status-bar">
@@ -879,13 +925,13 @@
             return labelColors['_default'];
         }
         
-        // 显示节点信息
+        // 显示节点信息（优化版）
         function showNodeInfo(nodeId) {
             const node = allNodes.get(nodeId);
             if (!node) return;
             
-            const detailsDiv = document.getElementById('node-details');
-            detailsDiv.innerHTML = '';
+            const container = document.getElementById('node-details-container');
+            container.innerHTML = '';
             
             // 添加标签信息
             const labelsDiv = document.createElement('div');
@@ -894,10 +940,24 @@
                 <div class="property-name">标签:</div>
                 <div class="property-value">${node.labels.join(', ')}</div>
             `;
-            detailsDiv.appendChild(labelsDiv);
+            container.appendChild(labelsDiv);
             
-            // 添加属性信息
+            // 优先显示name属性
+            if (node.properties.name) {
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'property-row';
+                nameDiv.innerHTML = `
+                    <div class="property-name">名称:</div>
+                    <div class="property-value">${node.properties.name}</div>
+                `;
+                container.appendChild(nameDiv);
+            }
+            
+            // 添加其他属性信息（排除已显示的name）
             for (const [key, value] of Object.entries(node.properties)) {
+                // 跳过已经显示的name属性
+                if (key === 'name') continue;
+                
                 const propDiv = document.createElement('div');
                 propDiv.className = 'property-row';
                 
@@ -913,9 +973,10 @@
                     <div class="property-name">${key}:</div>
                     <div class="property-value">${displayValue}</div>
                 `;
-                detailsDiv.appendChild(propDiv);
+                container.appendChild(propDiv);
             }
             
+            // 显示节点信息面板
             document.getElementById('node-info').style.display = 'block';
         }
         
